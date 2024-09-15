@@ -54,11 +54,12 @@ export const LoginController = async (req: Request, res: Response) => {
 //? REGISTER CONTROLLER 
 export const RegisterController = async (req: Request, res: Response) => {
     try {
-        const { user_name, email, password, role_id = 2 } = req.body as {
+        const { user_name, email, password, role_id = 2, created_by = null } = req.body as {
             user_name: string;
             email: string;
             password: string;
             role_id: number;
+            created_by: number | null;
         };
 
 
@@ -81,7 +82,7 @@ export const RegisterController = async (req: Request, res: Response) => {
 
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            const registered = await registerUser(user_name, normalizedEmail, hashedPassword, role_id);
+            const registered = await registerUser(user_name, normalizedEmail, hashedPassword, role_id, created_by);
 
             if (registered) {
                 const role = registered.role_id === 1 ? 'Admin' : 'User';

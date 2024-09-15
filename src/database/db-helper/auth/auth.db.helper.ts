@@ -30,10 +30,10 @@ export const loginUser = async (email: string, password: string) => {
 }
 
 // REGISTER USERS
-export const registerUser = async (user_name: string, email: string, password: string, role_id: number) => {
+export const registerUser = async (user_name: string, email: string, password: string, role_id: number, created_by: number | null) => {
     try {
-        const query = `INSERT INTO USERS(user_name, user_email, user_password, role_id) VALUES($1, $2, $3, $4) RETURNING *`;
-        const result = await pool.query(query, [user_name, email, password, role_id]);
+        const query = `INSERT INTO USERS(user_name, user_email, user_password, role_id, created_by) VALUES($1, $2, $3, $4, $5) RETURNING *`;
+        const result = await pool.query(query, [user_name, email, password, role_id, created_by]);
 
         // Check if the insertion was successful
         return (result?.rowCount ?? 0) > 0 ? result.rows[0] : false;
