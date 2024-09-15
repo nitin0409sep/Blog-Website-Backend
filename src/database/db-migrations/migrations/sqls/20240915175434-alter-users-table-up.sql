@@ -1,0 +1,3 @@
+/* Replace with your SQL commands */
+ALTER TABLE USERS
+ADD COLUMN CREATED_BY INTEGER DEFAULT NULL;
