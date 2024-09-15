@@ -22,11 +22,12 @@ app.use(express.json())
 //? IMPORT ROUTES
 import { AuthenticationRoute } from '../routes/authentication.route';
 import { UserRoute } from '../routes/users.routes';
-import { PostRoute } from '../routes/posts.route';
+import { AdminRoute } from '../routes/admin.routes';
 
 //? ROUTES
 app.use('/api/v1/auth', AuthenticationRoute)
 app.use('/api/v1/user', UserRoute)
+app.use('/api/v1/admin', AdminRoute)
 
 //? ERROR HANDLING MIDDLEWARE 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

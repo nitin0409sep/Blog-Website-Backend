@@ -15,7 +15,10 @@ export const roleBasedAuthMiddleware = (allowedRole: Role) => {
                 return res.status(403).json({ error: err.message });
             }
 
-            req.user = user;
+            req.user = {
+                ...user,
+                role: user.role_id,
+            }
 
             // Role-Based Access Control
             if (allowedRole === 'Admin' && req.user?.role !== 'Admin')
