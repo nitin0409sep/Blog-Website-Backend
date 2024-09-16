@@ -1,8 +1,7 @@
-import { Response } from "express";
-import { ExtendedRequest } from "../../utils/user.interface";
+import { Response, Request } from "express";
 import { getPublicPost } from "../../database/db-helper/public/public-posts.helper.db";
 
-export const getPublicPosts = async (req: ExtendedRequest, res: Response) => {
+export const getPublicPosts = async (req: Request, res: Response) => {
     try {
         const posts = await getPublicPost();
 

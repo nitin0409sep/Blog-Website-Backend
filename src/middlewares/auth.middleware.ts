@@ -1,11 +1,10 @@
-import { Response, NextFunction } from 'express';
-import { ExtendedRequest } from '../utils/user.interface';
+import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 
 type Role = 'Admin' | 'User' | 'Both';
 
 export const roleBasedAuthMiddleware = (allowedRole: Role) => {
-    return (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         const authHeader = req.headers['authorization'];
         const token = authHeader?.split(' ')[1] ?? '';
 

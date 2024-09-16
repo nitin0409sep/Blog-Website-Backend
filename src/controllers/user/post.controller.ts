@@ -1,10 +1,9 @@
-import { Response } from "express";
-import { ExtendedRequest } from "../../utils/user.interface";
+import { Request, Response } from "express";
 import { addUserPost, deleteUserPost, editUserPost, getUserPost } from "../../database/db-helper/user/user-post.db.helper";
 import { uploadOnCloudinary } from "../../utils/cloudinary";
 
 // Get User Posts Controller
-export const getUserPosts = async (req: ExtendedRequest, res: Response) => {
+export const getUserPosts = async (req: Request, res: Response) => {
     const user_id: string | null = req.user!.user_id;
 
     if (!user_id) {
@@ -35,7 +34,7 @@ export const getUserPosts = async (req: ExtendedRequest, res: Response) => {
 
 
 // Add User Posts Controller
-export const addUserPosts = async (req: ExtendedRequest, res: Response) => {
+export const addUserPosts = async (req: Request, res: Response) => {
     const user_id: string | null = req.user?.user_id ?? null;
 
     if (!user_id) {
@@ -80,7 +79,7 @@ export const addUserPosts = async (req: ExtendedRequest, res: Response) => {
 
 
 // Edit User Post Controller
-export const editUserPosts = async (req: ExtendedRequest, res: Response) => {
+export const editUserPosts = async (req: Request, res: Response) => {
     const user_id: string | null = req.user?.user_id ?? null;
     const { post_id } = req.params as { post_id: string | null };
 
@@ -119,7 +118,7 @@ export const editUserPosts = async (req: ExtendedRequest, res: Response) => {
 }
 
 // Delete User Post Controller
-export const deleteUserPosts = async (req: ExtendedRequest, res: Response) => {
+export const deleteUserPosts = async (req: Request, res: Response) => {
     const user_id: string | null = req.user?.user_id ?? null;
     // const { post_id } = req.query; // Accessing post_id from query params
     const { post_id } = req.params; // URL Param

@@ -1,5 +1,3 @@
-import { Request } from "express";
-
 export interface User {
     user_id: string,
     email: string,
@@ -7,7 +5,3 @@ export interface User {
     role: string,
 }
 
-
-export interface ExtendedRequest extends Request {
-    user?: User;
-}

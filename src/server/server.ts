@@ -23,6 +23,7 @@ app.use(express.json())
 import { AuthenticationRoute } from '../routes/authentication.route';
 import { UserRoute } from '../routes/users.routes';
 import { AdminRoute } from '../routes/admin.routes';
+import { User } from '../utils/user.interface';
 
 //? ROUTES
 app.use('/api/v1/auth', AuthenticationRoute)
