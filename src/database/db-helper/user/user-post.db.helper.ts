@@ -3,7 +3,7 @@ import { pool } from "../../db-config/db-connection";
 // Get Users ALL posts
 export const getUserPost = async (user_id: string) => {
     try {
-        const query = `Select post_name, post_desc, post_article, img_url from posts where user_id = $1 and post_archive = false order by created_at DESC`;
+        const query = `Select post_id, post_name, post_desc, post_article, img_url from posts where user_id = $1 and post_archive = false order by created_at DESC`;
         const values = [user_id];
 
         const { rows } = await pool.query(query, values);

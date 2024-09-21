@@ -1,11 +1,5 @@
 import * as express from 'express';
-
-type User = {
-    user_id: string;
-    email: string;
-    user_name: string;
-    role: string;
-}
+import { User } from '../utils/user.interface';
 
 declare global {
     namespace Express {

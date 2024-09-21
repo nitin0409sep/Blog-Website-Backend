@@ -1,6 +1,8 @@
 import { Response, Request } from "express";
 import { getPublicPost } from "../../database/db-helper/public/public-posts.helper.db";
+import { getPostFromDb } from '../../database/db-helper/public/public-posts.helper.db';
 
+// Get All Posts
 export const getPublicPosts = async (req: Request, res: Response) => {
     try {
         const posts = await getPublicPost();
@@ -28,3 +30,29 @@ export const getPublicPosts = async (req: Request, res: Response) => {
         }
     }
 };
+
+// Get Post
+export const getPost = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        if (!id)
+            return res.status(400).json({ error: "Please provide post id." })
+
+        const post = await getPostFromDb(id);
+
+        if (!post)
+            return res.status(404).json({ error: "Post not found." });
+
+        return res.status(200).json({ post, error: null, status: 200 })
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("Error in getPost:", error.message);
+            return res.status(500).json({ error: error.message, message: "Something went wrong!!!" });
+        } else {
+            console.error("Unexpected error:", error);
+            return res.status(500).json({ error: "Unexpected error occurred" });
+        }
+    }
+
+}
