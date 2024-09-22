@@ -1,5 +1,5 @@
 /* Replace with your SQL commands */
-CREATE TABLE Posts (
+CREATE TABLE IF NOT EXISTS Posts (
     post_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
     user_id UUID REFERENCES Users(user_id) ON DELETE CASCADE NOT NULL, 
     post_name VARCHAR(100) NOT NULL, 
