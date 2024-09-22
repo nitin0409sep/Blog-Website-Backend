@@ -14,7 +14,8 @@ export const uploadOnCloudinary = async (localFilePath: any) => {
 
         // Upload File On Cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto"
+            resource_type: "auto",
+            folder: "blog-website-2024",
         })
 
         // file has been uploaded

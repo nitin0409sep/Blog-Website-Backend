@@ -10,8 +10,10 @@ export const getUserPosts = async (req: Request, res: Response) => {
         return res.status(401).json({ posts: [], status: 401, errors: "User not found" });
     }
 
+    const { post_id } = req.params;
+
     try {
-        const posts = await getUserPost(user_id);
+        const posts = await getUserPost(user_id, post_id);
 
         if (!posts || posts.length === 0) {
             return res.status(200).json({ posts: [], status: 200, error: null });;

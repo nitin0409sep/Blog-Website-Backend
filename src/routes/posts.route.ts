@@ -5,7 +5,7 @@ import { upload } from "../middlewares/multer.middleware";
 const route = Router();
 
 // Get User Posts
-route.get('/post', getUserPosts);
+route.get('/post/:post_id?', getUserPosts);
 
 // Add User Posts
 route.post('/post', upload.single('image'), addUserPosts);

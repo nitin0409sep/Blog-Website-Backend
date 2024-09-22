@@ -1,17 +1,36 @@
 import { pool } from "../../db-config/db-connection";
 
 // Get Users ALL posts
-export const getUserPost = async (user_id: string) => {
+export const getUserPost = async (user_id: string, post_id?: string) => {
     try {
-        const query = `Select post_id, post_name, post_desc, post_article, img_url from posts where user_id = $1 and post_archive = false order by created_at DESC`;
-        const values = [user_id];
+        let query;
+        let values;
+
+        // Get single Post or all Posts based on post_id
+        if (post_id) {
+            query = `SELECT post_id, post_name, post_desc, post_article, img_url 
+                     FROM posts 
+                     WHERE user_id = $1 AND post_archive = false AND post_id = $2`;
+            values = [user_id, post_id];
+        } else {
+            query = `SELECT post_id, post_name, post_desc, post_article, img_url 
+                     FROM posts 
+                     WHERE user_id = $1 AND post_archive = false 
+                     ORDER BY created_at DESC`;
+            values = [user_id];
+        }
 
         const { rows } = await pool.query(query, values);
 
+        // Check if rows are returned, otherwise return null
         return rows.length ? rows : null;
+
     } catch (err) {
+        // Log the actual error for debugging
         console.error('Error Getting User Post:', err);
-        throw new Error("Couldn't get post, please try again.");
+
+        // Throw a user-friendly error message
+        throw new Error("Couldn't get post, please try again later.");
     }
 };
 
@@ -72,7 +91,7 @@ export const editUserPost = async (
 // Delete Users Post
 export const deleteUserPost = async (user_id: string, post_id: string) => {
     try {
-        const query = `DELETE FROM posts WHERE user_id = $1 AND post_id = $2 RETURNING *`;
+        const query = `UPDATE POSTS SET post_archive = true WHERE user_id = $1 AND post_id = $2 RETURNING *`;
         const values = [user_id, post_id];
 
         const { rows } = await pool.query(query, values);
