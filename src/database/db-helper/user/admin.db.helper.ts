@@ -2,7 +2,7 @@ import { pool } from "../../db-config/db-connection";
 
 export const getUsers = async () => {
     try {
-        const query = 'Select * from users where created_by = $1';
+        const query = 'Select * from users where created_by = $1 AND user_archive = false';
         const values = [1];
 
         const { rows } = await pool.query(query, values);

@@ -20,7 +20,7 @@ export const getPublicPost = async () => {
 // Get Public Post
 export const getPostFromDb = async (id: string) => {
     try {
-        const query = 'SELECT p.post_name, p.post_article, p.post_desc, p.img_url, u.user_name from posts p JOIN users u on p.user_id = u.user_id where post_id = $1 and post_public = true';
+        const query = 'SELECT p.post_name, p.post_article, p.post_desc, p.img_url, u.user_name from posts p JOIN users u on p.user_id = u.user_id where post_id = $1 and post_public = true AND post_archive = false';
 
         const value = [id];
 
