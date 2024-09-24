@@ -9,15 +9,14 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
 
         // Get single Post or all Posts based on post_id
         if (post_id) {
-            query = `SELECT post_id, post_name, post_desc, post_article, img_url 
-                     FROM posts 
-                     WHERE user_id = $1 AND post_archive = false AND post_id = $2`;
+            query = `SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url , Count(pl.liked) as likesCount FROM posts as p LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id and pl.liked = true
+            WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2 GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url`;
+
             values = [user_id, post_id];
         } else {
-            query = `SELECT post_id, post_name, post_desc, post_article, img_url 
-                     FROM posts 
-                     WHERE user_id = $1 AND post_archive = false 
-                     ORDER BY created_at DESC`;
+            query = `SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, Count(pl.liked) as likesCount
+                     FROM posts AS p LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
+                     WHERE p.user_id = $1 AND p.post_archive = false GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url ORDER BY p.created_at DESC`;
             values = [user_id];
         }
 

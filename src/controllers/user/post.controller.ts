@@ -28,9 +28,10 @@ export const getUserPosts = async (req: Request, res: Response) => {
             post_desc: post.post_desc,
             post_article: post.post_article,
             img_url: post.img_url,
+            likedCount: post.likescount
         }));
 
-        return res.status(200).json({ posts: response, status: 200, error: null });
+        return res.status(200).json({ posts, status: 200, error: null });
     } catch (error) {
         console.error(`Error fetching posts for user_id ${user_id}:`, error);
         return res.status(500).json({ error: "An unexpected error occurred", status: 500 });

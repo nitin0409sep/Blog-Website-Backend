@@ -17,6 +17,7 @@ export const getPublicPosts = async (req: Request, res: Response) => {
             post_desc: post.post_desc,
             post_article: post.post_article,
             img_url: post.img_url,
+            likescount: post.likescount,
         }));
 
         res.status(200).json({ posts: response, status: 200, error: null });
