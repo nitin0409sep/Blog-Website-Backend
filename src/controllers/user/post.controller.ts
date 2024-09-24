@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
-import { addUserPost, deleteUserPost, editUserPost, getUserPost } from "../../database/db-helper/user/user-post.db.helper";
+import { addUserPost, deleteUserPost, editUserPost, getUserPost, upsertLikeInDb, getLikesCount } from "../../database/db-helper/user/user-post.db.helper";
 import { uploadOnCloudinary } from "../../utils/cloudinary";
+import { asyncHandlerWithResponse } from "../../utils/asyncHandler";
+import { ApiError } from "../../utils/apiErrorResponse";
+import { ApiResponse } from "../../utils/apiResponse";
 
 // Get User Posts Controller
 export const getUserPosts = async (req: Request, res: Response) => {
@@ -142,3 +145,53 @@ export const deleteUserPosts = async (req: Request, res: Response) => {
         return res.status(500).json({ error: "An unexpected error occurred", status: 500 });
     }
 };
+
+
+// Get Post Count
+export const getPostLikesCount = asyncHandlerWithResponse(async (req: Request, res: Response) => {
+    try {
+        const { post_id } = req.params;
+
+        if (!post_id)
+            return new ApiError(400, "Post Id is required");
+
+        const result = await getLikesCount(post_id);
+
+        if (!result)
+            return new ApiError(500, `Couldnt fetch likes count of the post. Please try again.`);
+
+        return res.status(200).json(new ApiResponse(200, { postLikesCount: result?.like_count }, "Liked Posts"));
+    } catch (error) {
+        if (error instanceof Error) {
+            return new ApiError(500, "Error");
+        } else {
+            return new ApiError(500, 'An unknown error occurred.');
+        }
+    }
+})
+
+// Add/Update Post Like/Unlike
+export const addUpdatePostLike = asyncHandlerWithResponse(async (req: Request, res: Response) => {
+    const { user_id } = req.user;
+
+    if (!user_id)
+        return new ApiError(401, "User is not Logged In.");
+
+    const { like, post_id } = req.body as { like: boolean, post_id: string };
+
+    try {
+        const result = await upsertLikeInDb(post_id, user_id, like);
+
+        if (!result)
+            return new ApiError(500, `Couldnt ${like ? "like" : "unlike"} the post. Please try again.`);
+
+        return res.status(200).json(new ApiResponse(200, `${like ? "Liked" : "Unliked"} Post Successfully`));
+    } catch (error) {
+        if (error instanceof Error) {
+            return new ApiError(500, error.message);
+        } else {
+            return new ApiError(500, 'An unknown error occurred.');
+        }
+    }
+})
+

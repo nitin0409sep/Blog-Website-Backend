@@ -1,3 +1,4 @@
+import { asyncHandlerWithResponse } from "../../../utils/asyncHandler";
 import { pool } from "../../db-config/db-connection";
 
 // Get Users ALL posts
@@ -102,3 +103,51 @@ export const deleteUserPost = async (user_id: string, post_id: string) => {
         throw new Error("Couldn't delete post, please try again.");
     }
 };
+
+// Like - Get Count of likes on Post
+export const getLikesCount = async (post_id: string) => {
+    try {
+        const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
+        const values = [post_id];
+        const { rows } = await pool.query(query, values);
+
+        return { like_count: parseInt(rows[0].count ?? 0, 10) };
+    } catch (error) {
+        console.error('Error in Get Likes From Db', error);
+        throw new Error('Something went wrong');
+    }
+}
+
+
+// try {
+//     const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
+//     const values = [post_id];
+//     const { rows } = await pool.query(query, values);
+
+//     return rows[0].count; // Just return the count
+// } catch (error) {
+//     // console.error('Error in getLikesCount:', error.message); // Log the error message
+//     throw new Error('Something went wrong');
+// }
+
+// Add/Update Likes of Post
+export const upsertLikeInDb = async (post_id: string, user_id: string, like: boolean): Promise<any> => {
+    try {
+        const query = `
+                INSERT INTO PostLikes (user_id, post_id, liked)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (user_id, post_id) DO UPDATE
+                SET liked = excluded.liked
+                RETURNING *`;
+        const values = [user_id, post_id, like];
+        const { rows } = await pool.query(query, values);
+
+        return rows.length > 0 ? rows[0] : null;
+    } catch (error) {
+        console.error('Error in upsertLikeInDb:', error);
+        throw new Error('Something went wrong');
+    }
+};
+
+// Using excluded: Updates the column to the new value from the insert.
+// Not using excluded: Keeps the existing value unchanged, as it effectively does nothing to modify the current row.
