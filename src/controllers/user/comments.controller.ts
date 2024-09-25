@@ -4,7 +4,6 @@ import { ApiError } from "../../utils/apiErrorResponse";
 import { addComments, likeComments } from "../../database/db-helper/user/comments.db.helper";
 import { ApiResponse } from "../../utils/apiResponse";
 
-
 // Add Comments
 export const addComment = asyncHandlerWithResponse(async (req: Request, res: Response) => {
     const { user_id } = req.user;
@@ -34,6 +33,7 @@ export const addComment = asyncHandlerWithResponse(async (req: Request, res: Res
     }
 });
 
+// Like Comments
 export const likeComment = asyncHandlerWithResponse(async (req: Request, res: Response) => {
     const { user_id } = req.user;
 

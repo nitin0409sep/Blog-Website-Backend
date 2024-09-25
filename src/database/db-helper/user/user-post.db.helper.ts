@@ -9,8 +9,22 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
 
         // Get single Post or all Posts based on post_id
         if (post_id) {
-            query = `SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url , Count(pl.liked) as likesCount FROM posts as p LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id and pl.liked = true
-            WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2 GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url`;
+
+            query = `
+           SELECT 
+                p.post_id, 
+                p.post_name, 
+                p.post_desc, 
+                p.post_article, 
+                p.img_url, 
+                COUNT(DISTINCT pl.liked) AS likesCount,
+                jsonb_agg(DISTINCT jsonb_build_object('comment_id', c.comment_id, 'comment', c.comment, 'is_sub_comment', c.is_sub_comment)) AS comments
+                FROM posts AS p
+                LEFT JOIN comments AS c ON p.post_id = c.post_id
+                LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
+                WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2
+                GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url;
+        `;
 
             values = [user_id, post_id];
         } else {
@@ -102,20 +116,6 @@ export const deleteUserPost = async (user_id: string, post_id: string) => {
         throw new Error("Couldn't delete post, please try again.");
     }
 };
-
-// Like - Get Count of likes on Post
-export const getLikesCount = async (post_id: string) => {
-    try {
-        const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
-        const values = [post_id];
-        const { rows } = await pool.query(query, values);
-
-        return { like_count: parseInt(rows[0].count ?? 0, 10) };
-    } catch (error) {
-        console.error('Error in Get Likes From Db', error);
-        throw new Error('Something went wrong');
-    }
-}
 
 // Add/Update Likes of Post
 export const upsertLikeInDb = async (post_id: string, user_id: string, like: boolean): Promise<any> => {

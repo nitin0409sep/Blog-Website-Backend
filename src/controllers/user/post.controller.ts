@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { addUserPost, deleteUserPost, editUserPost, getUserPost, upsertLikeInDb, getLikesCount } from "../../database/db-helper/user/user-post.db.helper";
+import { addUserPost, deleteUserPost, editUserPost, getUserPost, upsertLikeInDb } from "../../database/db-helper/user/user-post.db.helper";
 import { uploadOnCloudinary } from "../../utils/cloudinary";
 import { asyncHandlerWithResponse } from "../../utils/asyncHandler";
 import { ApiError } from "../../utils/apiErrorResponse";
@@ -148,29 +148,6 @@ export const deleteUserPosts = async (req: Request, res: Response) => {
 };
 
 
-// Get Post Count
-export const getPostLikesCount = asyncHandlerWithResponse(async (req: Request, res: Response) => {
-    try {
-        const { post_id } = req.params;
-
-        if (!post_id)
-            return new ApiError(400, "Post Id is required");
-
-        const result = await getLikesCount(post_id);
-
-        if (!result)
-            return new ApiError(500, `Couldnt fetch likes count of the post. Please try again.`);
-
-        return res.status(200).json(new ApiResponse(200, { postLikesCount: result?.like_count }, "Liked Posts"));
-    } catch (error) {
-        if (error instanceof Error) {
-            return new ApiError(500, "Error");
-        } else {
-            return new ApiError(500, 'An unknown error occurred.');
-        }
-    }
-})
-
 // Add/Update Post Like/Unlike
 export const addUpdatePostLike = asyncHandlerWithResponse(async (req: Request, res: Response) => {
     const { user_id } = req.user;
@@ -195,4 +172,3 @@ export const addUpdatePostLike = asyncHandlerWithResponse(async (req: Request, r
         }
     }
 })
-
