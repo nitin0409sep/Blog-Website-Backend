@@ -10,7 +10,7 @@ const route = Router();
 route.get('/getUsers', roleBasedAuthMiddleware('Admin'), getUsersController);
 
 // User Posts Routes
-route.use('', roleBasedAuthMiddleware('User'), PostRoute);
+route.use('/post', roleBasedAuthMiddleware('User'), PostRoute);
 
 export const UserRoute = route;
 

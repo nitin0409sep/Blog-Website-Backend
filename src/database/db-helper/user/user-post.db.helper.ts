@@ -117,18 +117,6 @@ export const getLikesCount = async (post_id: string) => {
     }
 }
 
-
-// try {
-//     const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
-//     const values = [post_id];
-//     const { rows } = await pool.query(query, values);
-
-//     return rows[0].count; // Just return the count
-// } catch (error) {
-//     // console.error('Error in getLikesCount:', error.message); // Log the error message
-//     throw new Error('Something went wrong');
-// }
-
 // Add/Update Likes of Post
 export const upsertLikeInDb = async (post_id: string, user_id: string, like: boolean): Promise<any> => {
     try {
