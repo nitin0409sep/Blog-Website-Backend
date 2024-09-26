@@ -9,22 +9,25 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
 
         // Get single Post or all Posts based on post_id
         if (post_id) {
-
             query = `
-           SELECT 
-                p.post_id, 
-                p.post_name, 
-                p.post_desc, 
-                p.post_article, 
-                p.img_url, 
-                COUNT(DISTINCT pl.liked) AS likesCount,
-                jsonb_agg(DISTINCT jsonb_build_object('comment_id', c.comment_id, 'comment', c.comment, 'is_sub_comment', c.is_sub_comment)) AS comments
-                FROM posts AS p
-                LEFT JOIN comments AS c ON p.post_id = c.post_id
-                LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
-                WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2
-                GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url;
-        `;
+                    SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url,
+                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.         is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount)) AS comments,
+                    COUNT(DISTINCT pl.liked) AS likesCount
+                    FROM POSTS AS p LEFT JOIN (
+                    SELECT 
+                            c.post_id, 
+                            c.comment_id, 
+                            c.comment,  
+                            c.is_sub_comment, 
+                            COUNT(LC.like_comment) AS commentsLikeCount 
+                        FROM COMMENTS AS c 
+                        LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id AND lc.like_comment = true
+                        GROUP BY c.comment_id, c.comment, c.is_sub_comment
+                    ) AS cd ON p.post_id = cd.post_id
+                    LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
+                    WHERE p.user_id = '${user_id}' AND p.post_archive = false AND p.post_id = '${post_id}'
+                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url;            
+            `;
 
             values = [user_id, post_id];
         } else {
@@ -34,7 +37,8 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
             values = [user_id];
         }
 
-        const { rows } = await pool.query(query, values);
+        let { rows } = await pool.query(query, values);
+
 
         // Check if rows are returned, otherwise return null
         return rows.length ? rows : null;
