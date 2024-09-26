@@ -10,8 +10,8 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
         // Get single Post or all Posts based on post_id
         if (post_id) {
             query = `
-                    SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url,
-                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.         is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount)) AS comments,
+                    SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
+                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount)) AS comments,
                     COUNT(DISTINCT pl.liked) AS likesCount
                     FROM POSTS AS p LEFT JOIN (
                     SELECT 
@@ -25,8 +25,9 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
                         GROUP BY c.comment_id, c.comment, c.is_sub_comment
                     ) AS cd ON p.post_id = cd.post_id
                     LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
-                    WHERE p.user_id = '${user_id}' AND p.post_archive = false AND p.post_id = '${post_id}'
-                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url;            
+                    LEFT JOIN USERS as u on p.user_id = u.user_id
+                    WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2
+                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_id, u.user_name;            
             `;
 
             values = [user_id, post_id];

@@ -1,6 +1,6 @@
 import { pool } from "../../db-config/db-connection";
 
-// Get All public Posts
+// Get All Public Posts
 export const getPublicPost = async () => {
     try {
         const query = `SELECT p.*, COUNT(pl.liked) AS likescount 
@@ -19,15 +19,31 @@ export const getPublicPost = async () => {
 }
 
 
-// Get Public Post
-export const getPostFromDb = async (id: string) => {
+// Get Specific Public Post By ID
+export const getPostFromDb = async (post_id: string) => {
     try {
-        const query = `Select p1.*, COUNT(pl.liked) AS likescount from 
-        (SELECT p.post_id, p.post_name, p.post_article, p.post_desc, p.img_url, u.user_name from posts p Left JOIN users u on p.user_id = u.user_id where post_id = $1 and post_public = true AND post_archive = false) as p1 
-        LEFT JOIN PostLikes AS pl ON p1.post_id = pl.post_id AND pl.liked = true 
-        GROUP BY p1.post_id, p1.post_name, p1.post_article, p1.post_desc, p1.img_url, p1.user_name;`;
+        const query = `
+        SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
+        jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount)) AS comments,
+        COUNT(DISTINCT pl.liked) AS likesCount
+            FROM POSTS AS p 
+                LEFT JOIN (
+                    SELECT 
+                        c.post_id, 
+                        c.comment_id, 
+                        c.comment,  
+                        c.is_sub_comment, 
+                        COUNT(lc.like_comment) AS commentsLikeCount 
+                    FROM COMMENTS AS c 
+                    LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id AND lc.like_comment = true
+                    GROUP BY c.comment_id, c.comment, c.is_sub_comment
+                ) AS cd ON p.post_id = cd.post_id
+                LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
+                LEFT JOIN USERS as u ON p.user_id = u.user_id
+            WHERE p.post_id = $1 AND p.post_public = true AND p.post_archive = false
+        GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name;`;
 
-        const value = [id];
+        const value = [post_id];
 
         const { rows } = await pool.query(query, value);
 
@@ -35,9 +51,9 @@ export const getPostFromDb = async (id: string) => {
             return null; // Return null if no post is found
         }
 
-        const { post_name, post_article, post_desc, img_url, user_name, likescount } = rows[0];
+        const { post_name, post_article, post_desc, img_url, user_name, likescount, comments } = rows[0];
 
-        const postData = { post_name, post_desc, post_article, img_url, user_name, likescount }
+        const postData = { post_name, post_desc, post_article, img_url, user_name, likescount, comments }
 
         return postData;
     } catch (error) {
