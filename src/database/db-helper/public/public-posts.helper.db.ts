@@ -51,13 +51,13 @@ export const getPostFromDb = async (post_id: string, user_id?: string) => {
             return null;
 
         if (user_id) {
-            const query = `SELECT * FROM LIKECOMMENT AS lc WHERE lc.user_id = '${user_id}'`;
+            const query = `SELECT * FROM PostLikes AS lc WHERE lc.user_id = '${user_id}' AND post_id = '${post_id}' AND liked = true`;
             const user_like = await pool.query(query);
 
-            if (user_like.rows.length) rows[0].user_like = true;
+            rows[0].user_like = user_like.rows.length ? true : false;
         }
 
-        const { post_name, post_article, post_desc, img_url, user_name, likescount, comments, user_like = false } = rows[0];
+        const { post_name, post_article, post_desc, img_url, user_name, likescount, comments, user_like } = rows[0];
 
         const postData = { post_name, post_desc, post_article, img_url, user_name, likescount, comments, user_like }
 

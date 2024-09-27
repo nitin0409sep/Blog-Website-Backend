@@ -9,7 +9,6 @@ export const isUserMiddleware = () => {
         if (!token)
             return next();
 
-
         verify(token, process.env.ACCESS_TOKEN_SECRET ?? '', (err: any, user: any) => {
             if (err)
                 return res.status(403).json({ error: err.message });
