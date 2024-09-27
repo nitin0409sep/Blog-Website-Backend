@@ -36,16 +36,20 @@ export const getPublicPosts = async (req: Request, res: Response) => {
 export const getPost = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        let user_id = undefined;
+
+        if (req?.user?.user_id)
+            user_id = req.user.user_id;
 
         if (!id)
             return res.status(400).json({ error: "Please provide post id." })
 
-        const post = await getPostFromDb(id);
+        const posts = await getPostFromDb(id, user_id);
 
-        if (!post)
+        if (!posts)
             return res.status(404).json({ error: "Post not found." });
 
-        return res.status(200).json({ post, error: null, status: 200 })
+        return res.status(200).json({ posts, error: null, status: 200 })
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.error("Error in getPost:", error.message);

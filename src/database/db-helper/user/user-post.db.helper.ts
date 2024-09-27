@@ -1,4 +1,3 @@
-import { asyncHandlerWithResponse } from "../../../utils/asyncHandler";
 import { pool } from "../../db-config/db-connection";
 
 // Get Users ALL posts
@@ -15,6 +14,7 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
                     COUNT(DISTINCT pl.liked) AS likesCount
                     FROM POSTS AS p LEFT JOIN (
                     SELECT 
+                            c.user_id,
                             c.post_id, 
                             c.comment_id, 
                             c.comment,  
@@ -22,7 +22,7 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
                             COUNT(LC.like_comment) AS commentsLikeCount 
                         FROM COMMENTS AS c 
                         LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id AND lc.like_comment = true
-                        GROUP BY c.comment_id, c.comment, c.is_sub_comment
+                        GROUP BY c.comment_id, c.comment, c.is_sub_comment, c.user_id
                     ) AS cd ON p.post_id = cd.post_id
                     LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
                     LEFT JOIN USERS as u on p.user_id = u.user_id
@@ -40,6 +40,11 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
 
         let { rows } = await pool.query(query, values);
 
+        // User has already liked the post or not
+        query = `SELECT * FROM LIKECOMMENT AS lc WHERE lc.user_id = '${user_id}'`;
+        const user_like = await pool.query(query);
+
+        rows[0].user_like = user_like.rows.length ? true : false;
 
         // Check if rows are returned, otherwise return null
         return rows.length ? rows : null;

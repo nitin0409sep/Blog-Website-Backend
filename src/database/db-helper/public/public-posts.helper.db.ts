@@ -20,7 +20,7 @@ export const getPublicPost = async () => {
 
 
 // Get Specific Public Post By ID
-export const getPostFromDb = async (post_id: string) => {
+export const getPostFromDb = async (post_id: string, user_id?: string) => {
     try {
         const query = `
         SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
@@ -47,13 +47,19 @@ export const getPostFromDb = async (post_id: string) => {
 
         const { rows } = await pool.query(query, value);
 
-        if (rows.length === 0) {
-            return null; // Return null if no post is found
+        if (rows.length === 0)
+            return null;
+
+        if (user_id) {
+            const query = `SELECT * FROM LIKECOMMENT AS lc WHERE lc.user_id = '${user_id}'`;
+            const user_like = await pool.query(query);
+
+            if (user_like.rows.length) rows[0].user_like = true;
         }
 
-        const { post_name, post_article, post_desc, img_url, user_name, likescount, comments } = rows[0];
+        const { post_name, post_article, post_desc, img_url, user_name, likescount, comments, user_like = false } = rows[0];
 
-        const postData = { post_name, post_desc, post_article, img_url, user_name, likescount, comments }
+        const postData = { post_name, post_desc, post_article, img_url, user_name, likescount, comments, user_like }
 
         return postData;
     } catch (error) {

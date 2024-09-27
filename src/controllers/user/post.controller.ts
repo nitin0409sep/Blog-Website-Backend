@@ -22,15 +22,6 @@ export const getUserPosts = async (req: Request, res: Response) => {
             return res.status(200).json({ posts: [], status: 200, error: null });;
         }
 
-        const response = posts.map((post) => ({
-            post_id: post.post_id,
-            post_name: post.post_name,
-            post_desc: post.post_desc,
-            post_article: post.post_article,
-            img_url: post.img_url,
-            likedCount: post.likescount
-        }));
-
         return res.status(200).json({ posts, status: 200, error: null });
     } catch (error) {
         console.error(`Error fetching posts for user_id ${user_id}:`, error);

@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { addComment, likeComment } from "../controllers/user/comments.controller";
+import { roleBasedAuthMiddleware } from "../middlewares/auth.middleware";
 
 const route = Router();
 
