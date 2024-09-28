@@ -16,9 +16,11 @@ export const addComment = asyncHandlerWithResponse(async (req: Request, res: Res
         throw new ApiError(400, "Post id, Is Sub Comment and Comment are required");
     }
 
-    if (is_sub_comment && !parent_comment_id) {
+    if (is_sub_comment === false && parent_comment_id)
+        throw new ApiError(400, "Parent Comment id should be null, if its not a sub comment");
+
+    if (is_sub_comment && !parent_comment_id)
         throw new ApiError(400, "Parent comment_id is required when commenting inside a comment");
-    }
 
     try {
         const comments = await addComments(user_id, post_id, comment, is_sub_comment, parent_comment_id);
@@ -26,7 +28,7 @@ export const addComment = asyncHandlerWithResponse(async (req: Request, res: Res
         if (!comments)
             throw new ApiError(400, "Comment not added, please try again");
 
-        return res.status(201).json(new ApiResponse(201, "Comment Added Successfully!!!", comments));
+        return res.status(201).json(new ApiResponse(201, "Comment Added Successfully!!!"));
     } catch (error) {
         console.error('Error adding comment:', error);
         return new ApiError(500, "An unexpected error occurred");

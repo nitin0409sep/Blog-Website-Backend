@@ -49,6 +49,14 @@ export const getPost = async (req: Request, res: Response) => {
         if (!posts)
             return res.status(404).json({ error: "Post not found." });
 
+        // Arranged Comments In DESC order
+        posts.comments.sort((val1: any, val2: any) => {
+            const a = new Date(val1.commentTiming);
+            const b = new Date(val2.commentTiming);
+
+            return b.getTime() - a.getTime();
+        });
+
         return res.status(200).json({ posts, error: null, status: 200 })
     } catch (error: unknown) {
         if (error instanceof Error) {

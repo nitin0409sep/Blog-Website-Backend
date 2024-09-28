@@ -10,8 +10,9 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
         if (post_id) {
             query = `
                     SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
-                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount)) AS comments,
-                    COUNT(DISTINCT pl.liked) AS likesCount
+                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount , 'parentCommentId', cd.parent_comment_id, 'user', cd.user, 'commentTiming' , cd.commentTiming)
+                    ) AS comments,
+                    Count(DISTINCT pl.user_id) as likescount
                     FROM POSTS AS p LEFT JOIN (
                     SELECT 
                             c.user_id,
@@ -19,16 +20,20 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
                             c.comment_id, 
                             c.comment,  
                             c.is_sub_comment, 
+                            c.parent_comment_id,
+                            U.user_name as user,
+                            c.updated_at AS commentTiming,
                             COUNT(LC.like_comment) AS commentsLikeCount 
                         FROM COMMENTS AS c 
                         LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id AND lc.like_comment = true
-                        GROUP BY c.comment_id, c.comment, c.is_sub_comment, c.user_id
+                        LEFT JOIN USERS AS U ON C.USER_ID = U.USER_ID
+                        GROUP BY c.comment_id, c.comment, c.is_sub_comment, c.user_id,u.user_name
+                        ORDER BY commentTiming DESC
                     ) AS cd ON p.post_id = cd.post_id
                     LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
                     LEFT JOIN USERS as u on p.user_id = u.user_id
                     WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2
-                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_id, u.user_name;            
-            `;
+                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, pl.post_id, u.user_id, u.user_name`;
 
             values = [user_id, post_id];
         } else {
@@ -41,13 +46,17 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
         let { rows } = await pool.query(query, values);
 
         // User has already liked the post or not
-        query = `SELECT * FROM LIKECOMMENT AS lc WHERE lc.user_id = '${user_id}'`;
-        const user_like = await pool.query(query);
+        if (user_id && post_id) {
+            query = `SELECT * FROM PostLikes AS lc WHERE lc.user_id = '${user_id}' AND post_id = '${post_id}' AND liked = true`;
 
-        rows[0].user_like = user_like.rows.length ? true : false;
+            const user_like = await pool.query(query);
+
+            rows[0].user_like = user_like.rows.length ? true : false;
+        }
+
 
         // Check if rows are returned, otherwise return null
-        return rows.length ? rows : null;
+        return rows.length ? post_id ? rows[0] : rows : null;
 
     } catch (err) {
         // Log the actual error for debugging
