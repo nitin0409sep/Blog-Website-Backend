@@ -2,7 +2,6 @@ import { Router } from "express"
 import { getUserPosts, addUserPosts, editUserPosts, deleteUserPosts, addUpdatePostLike } from "../controllers/user/post.controller";
 import { upload } from "../middlewares/multer.middleware";
 import { CommentRoute } from "./comments.route";
-import { roleBasedAuthMiddleware } from "../middlewares/auth.middleware";
 const route = Router();
 
 //! Post Routes 
