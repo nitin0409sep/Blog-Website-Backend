@@ -23,12 +23,14 @@ export const getUserPosts = async (req: Request, res: Response) => {
         }
 
         // Arranged Comments In DESC order
-        posts.comments.sort((val1: any, val2: any) => {
-            const a = new Date(val1.commentTiming);
-            const b = new Date(val2.commentTiming);
+        if (post_id) {
+            posts.comments.sort((val1: any, val2: any) => {
+                const a = new Date(val1.commentTiming);
+                const b = new Date(val2.commentTiming);
 
-            return b.getTime() - a.getTime();
-        });
+                return b.getTime() - a.getTime();
+            });
+        }
 
         return res.status(200).json({ posts, status: 200, error: null });
     } catch (error) {
