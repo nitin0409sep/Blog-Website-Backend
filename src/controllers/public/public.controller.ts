@@ -61,7 +61,8 @@ export const getPost = async (req: Request, res: Response) => {
             if (element.user_liked_comment) {
                 element.user_liked_comment = true;
             } else {
-                element.user_liked_comment = false;
+                element.user_liked_comment === undefined ? undefined :
+                    element.user_liked_comment = false;
             }
         });
 
