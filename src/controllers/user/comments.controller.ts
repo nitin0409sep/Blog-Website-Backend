@@ -43,8 +43,6 @@ export const likeComment = asyncHandlerWithResponse(async (req: Request, res: Re
 
     const { comment_id, like } = req.body;
 
-    console.log(comment_id, like);
-
     if (!comment_id)
         throw new ApiError(400, "Comment id and Like are required");
 
@@ -54,7 +52,7 @@ export const likeComment = asyncHandlerWithResponse(async (req: Request, res: Re
         if (!likes)
             throw new ApiError(400, `Comment couldn't be ${like ? 'liked' : 'unliked'}, please try again`);
 
-        return res.status(200).json(new ApiResponse(200, `Comment ${like ? 'liked' : 'unliked'} successfully`));
+        return res.status(200).json(new ApiResponse(200, `${like ? 'Liked' : 'Unliked'} Comment Successfully`));
 
     } catch (error) {
         console.error('Error liking/unliking comment:', error);

@@ -30,6 +30,15 @@ export const getUserPosts = async (req: Request, res: Response) => {
 
                 return b.getTime() - a.getTime();
             });
+
+            // fetching whether the user has already liked the comment or not
+            posts?.comments?.forEach((element: any) => {
+                if (element.user_liked_comment) {
+                    element.user_liked_comment = true;
+                } else {
+                    element.user_liked_comment = false;
+                }
+            });
         }
 
         return res.status(200).json({ posts, status: 200, error: null });

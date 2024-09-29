@@ -50,11 +50,19 @@ export const getPost = async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Post not found." });
 
         // Arranged Comments In DESC order
-        posts.comments.sort((val1: any, val2: any) => {
+        posts?.comments.sort((val1: any, val2: any) => {
             const a = new Date(val1.commentTiming);
             const b = new Date(val2.commentTiming);
 
             return b.getTime() - a.getTime();
+        });
+
+        posts?.comments?.forEach((element: any) => {
+            if (element.user_liked_comment) {
+                element.user_liked_comment = true;
+            } else {
+                element.user_liked_comment = false;
+            }
         });
 
         return res.status(200).json({ posts, error: null, status: 200 })

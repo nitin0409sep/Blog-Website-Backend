@@ -24,7 +24,7 @@ export const getPostFromDb = async (post_id: string, user_id?: string) => {
     try {
         const query = `
         SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
-        jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount, 'parentCommentId', cd.parent_comment_id, 'user', cd.user, 'commentTiming' , cd.commentTiming)) AS comments,
+        jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount, 'parentCommentId', cd.parent_comment_id, 'user', cd.user, 'commentTiming' , cd.commentTiming, 'user_liked_comment', cd.liked_comment)) AS comments,
         COUNT(DISTINCT pl.user_id) AS likesCount
             FROM POSTS AS p 
                 LEFT JOIN (
@@ -36,9 +36,10 @@ export const getPostFromDb = async (post_id: string, user_id?: string) => {
                         c.parent_comment_id,
                         U.user_name as user,
                         c.updated_at AS commentTiming,
-                        COUNT(lc.like_comment) AS commentsLikeCount 
+                        COUNT(CASE WHEN lc.like_comment = true THEN 1 END) AS commentsLikeCount,
+                        MAX(CASE WHEN lc.user_id = '${user_id}' AND lc.like_comment = true THEN 1 ELSE 0 END) AS liked_comment 
                     FROM COMMENTS AS c 
-                    LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id AND lc.like_comment = true
+                    LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id
                     LEFT JOIN USERS AS U ON C.USER_ID = U.USER_ID
                     GROUP BY c.comment_id, c.comment, c.is_sub_comment, u.user_name
                 ) AS cd ON p.post_id = cd.post_id
