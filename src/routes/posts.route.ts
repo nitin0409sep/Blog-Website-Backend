@@ -1,25 +1,27 @@
 import { Router } from "express"
-import { getUserPosts, addUserPosts, editUserPosts, deleteUserPosts, addUpdatePostLike, getPostLikesCount } from "../controllers/user/post.controller";
+import { getUserPosts, addUserPosts, editUserPosts, deleteUserPosts, addUpdatePostLike } from "../controllers/user/post.controller";
 import { upload } from "../middlewares/multer.middleware";
-
+import { CommentRoute } from "./comments.route";
 const route = Router();
 
+//! Post Routes 
 // Get User Posts
-route.get('/post/:post_id?', getUserPosts);
+route.get('/:post_id?', getUserPosts);
 
 // Add User Posts
-route.post('/post', upload.single('image'), addUserPosts);
+route.post('/', upload.single('image'), addUserPosts);
 
 // Edit User Posts
-route.put('/post/:post_id', editUserPosts);
+route.put('/:post_id', editUserPosts);
 
 // Delete User Post
-route.delete('/post/:post_id', deleteUserPosts);
+route.delete('/:post_id', deleteUserPosts);
 
-// Get Post Likes
-route.get('/likes/:post_id', getPostLikesCount);
-
+//! Post Like Routes
 // Add/Update Post Likes
 route.post('/likes', addUpdatePostLike);
+
+//! Comments Route
+route.use('', CommentRoute);
 
 export { route as PostRoute }

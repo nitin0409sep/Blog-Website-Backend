@@ -1,4 +1,3 @@
-import { asyncHandlerWithResponse } from "../../../utils/asyncHandler";
 import { pool } from "../../db-config/db-connection";
 
 // Get Users ALL posts
@@ -9,8 +8,33 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
 
         // Get single Post or all Posts based on post_id
         if (post_id) {
-            query = `SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url , Count(pl.liked) as likesCount FROM posts as p LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id and pl.liked = true
-            WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2 GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url`;
+            query = `
+                    SELECT p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, u.user_name,
+                    jsonb_agg(DISTINCT jsonb_build_object('comment_id', cd.comment_id, 'comment', cd.comment, 'is_sub_comment', cd.is_sub_comment, 'commentsLikeCount', cd.commentsLikeCount , 'parentCommentId', cd.parent_comment_id, 'user', cd.user, 'commentTiming' , cd.commentTiming, 'user_liked_comment', cd.liked_comment)
+                    ) AS comments,
+                    Count(DISTINCT pl.user_id) as likescount
+                    FROM POSTS AS p LEFT JOIN (
+                    SELECT 
+                            c.user_id,
+                            c.post_id, 
+                            c.comment_id, 
+                            c.comment,  
+                            c.is_sub_comment, 
+                            c.parent_comment_id,
+                            U.user_name as user,
+                            c.updated_at AS commentTiming,
+                            COUNT(CASE WHEN lc.like_comment = true THEN 1 END) AS commentsLikeCount,
+                            MAX(CASE WHEN lc.user_id = '${user_id}' AND lc.like_comment = true THEN 1 ELSE 0 END) AS liked_comment 
+                        FROM COMMENTS AS c 
+                        LEFT JOIN LIKECOMMENT AS lc ON c.comment_id = lc.comment_id
+                        LEFT JOIN USERS AS U ON C.USER_ID = U.USER_ID 
+                        GROUP BY c.comment_id, c.comment, c.is_sub_comment, c.user_id, u.user_name, lc.like_comment
+                        ORDER BY commentTiming DESC
+                    ) AS cd ON p.post_id = cd.post_id
+                    LEFT JOIN PostLikes AS pl ON p.post_id = pl.post_id AND pl.liked = true
+                    LEFT JOIN USERS as u on p.user_id = u.user_id
+                    WHERE p.user_id = $1 AND p.post_archive = false AND p.post_id = $2
+                    GROUP BY p.post_id, p.post_name, p.post_desc, p.post_article, p.img_url, pl.post_id, u.user_id, u.user_name`;
 
             values = [user_id, post_id];
         } else {
@@ -20,10 +44,20 @@ export const getUserPost = async (user_id: string, post_id?: string) => {
             values = [user_id];
         }
 
-        const { rows } = await pool.query(query, values);
+        let { rows } = await pool.query(query, values);
+
+        // User has already liked the post or not
+        if (user_id && post_id) {
+            query = `SELECT * FROM PostLikes AS lc WHERE lc.user_id = '${user_id}' AND post_id = '${post_id}' AND liked = true`;
+
+            const user_like = await pool.query(query);
+
+            rows[0].user_like = user_like.rows.length ? true : false;
+        }
+
 
         // Check if rows are returned, otherwise return null
-        return rows.length ? rows : null;
+        return rows.length ? post_id ? rows[0] : rows : null;
 
     } catch (err) {
         // Log the actual error for debugging
@@ -102,32 +136,6 @@ export const deleteUserPost = async (user_id: string, post_id: string) => {
         throw new Error("Couldn't delete post, please try again.");
     }
 };
-
-// Like - Get Count of likes on Post
-export const getLikesCount = async (post_id: string) => {
-    try {
-        const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
-        const values = [post_id];
-        const { rows } = await pool.query(query, values);
-
-        return { like_count: parseInt(rows[0].count ?? 0, 10) };
-    } catch (error) {
-        console.error('Error in Get Likes From Db', error);
-        throw new Error('Something went wrong');
-    }
-}
-
-
-// try {
-//     const query = `SELECT COUNT(*) FROM PostLikes WHERE post_id = $1 AND liked = true;`;
-//     const values = [post_id];
-//     const { rows } = await pool.query(query, values);
-
-//     return rows[0].count; // Just return the count
-// } catch (error) {
-//     // console.error('Error in getLikesCount:', error.message); // Log the error message
-//     throw new Error('Something went wrong');
-// }
 
 // Add/Update Likes of Post
 export const upsertLikeInDb = async (post_id: string, user_id: string, like: boolean): Promise<any> => {
