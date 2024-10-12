@@ -3,9 +3,9 @@
         "driver": "pg",
         "user": "postgres",
         "host": "localhost",
-        "password": "123",
-        "database": "auth_react",
-        "port": "5400",
+        "password": "12345",
+        "database": "blog-web-app",
+        "port": "5432",
         "schema": "public"
     }
 }

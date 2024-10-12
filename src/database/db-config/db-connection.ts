@@ -1,11 +1,11 @@
 import { Pool, PoolConfig } from "pg";
 
 const poolConfig: PoolConfig = {
-    user: process.env.USER,
+    user: process.env.PG_USER,
     host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: +(process.env.DBPORT ?? '5400'),
+    database: process.env.PG_DATABASE,
+    password: process.env.PG_PASSWORD,
+    port: +(process.env.DBPORT ?? '5432'),
 
     max: 10,
     connectionTimeoutMillis: 0,
